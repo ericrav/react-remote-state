@@ -27,5 +27,6 @@ module.exports = {
     '@typescript-eslint/no-non-null-assertion': 'off',
     'react/jsx-props-no-spreading': 'off',
     'react/require-default-props': 'off',
+    'import/prefer-default-export': 'off',
   },
 };
