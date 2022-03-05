@@ -1,3 +1,4 @@
+import { act } from '@testing-library/react-hooks';
 import { testHook } from '../../utils/tests/testHook';
 import { useRemoteState } from '../useRemoteState';
 
@@ -39,5 +40,18 @@ test('query function', async () => {
     const [state,, { loading }] = useTestRemoteState('test1', { query: () => Promise.resolve('data') });
     expect(state).toEqual('data');
     expect(loading).toEqual(false);
+  }
+});
+
+test('caching', async () => {
+  const [useInstance1] = testHook(useRemoteState);
+  const [useInstance2] = testHook(useRemoteState);
+  {
+    const [, setState] = useInstance1('id', { meta: 'hook1' });
+    act(() => setState('value'));
+  }
+  {
+    const [state] = useInstance2('id', { meta: 'hook2' });
+    expect(state).toEqual('value');
   }
 });
