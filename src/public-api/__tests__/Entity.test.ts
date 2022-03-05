@@ -11,17 +11,30 @@ test('entity', async () => {
   expect(note('5')('value')).toMatchInlineSnapshot(`
 Object {
   "key": "entity-1-5",
+  "options": Object {
+    "query": [Function],
+  },
   "value": "value",
 }
 `);
   const value = await note('3').options?.query?.('3');
-  expect(value).toEqual({ key: 'entity-1-3', value: 'note value' });
+  expect(value).toEqual({ key: 'entity-1-3', value: 'note value', options: expect.any(Object) });
 });
 
-interface User {
-  id: string;
-  profile: {
-    name: string;
-    age: number;
-  }
-}
+test('derive entities', () => {
+  const User = entity<string, { id: string }>();
+  const UserList = entity<void, { id: string }[]>({
+    derive: (list) => list.map((user) => User(user.id)(user)),
+  });
+
+  const { value, options: { derive } } = UserList()([
+    { id: '1' },
+    { id: '2' },
+    { id: '3' },
+  ]);
+  expect(derive!(value)).toEqual([
+    User('1')({ id: '1' }),
+    User('2')({ id: '2' }),
+    User('3')({ id: '3' }),
+  ]);
+});

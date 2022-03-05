@@ -1,7 +1,14 @@
-interface RemoteStateOptions<T> {
-  query?: (args: string) => T | Promise<T> | Promise<{ key: string; value: T }>;
+interface EntityValue<T> {
+  key: string;
+  value: T;
+  options: EntityOptions<T>;
+}
+
+interface EntityOptions<T> {
+  query?: (args: string) => T | Promise<T> | Promise<EntityValue<T>>;
   defaultValue?: T;
   meta?: string;
+  derive?: (value: T) => EntityValue<any>[];
 }
 export interface Entity<P, T> {
   (): EntityById<T>;
@@ -10,25 +17,20 @@ export interface Entity<P, T> {
 }
 
 export interface EntityById<T> {
-  (value: T): ({ key: string; value: T });
+  (value: T): EntityValue<T>;
   key: string;
-  options?: RemoteStateOptions<T>
+  options?: EntityOptions<T>
 }
 
 let globalKeyId = 0;
 
 export function __test_reset_entity_key() { globalKeyId = 0; } // eslint-disable-line
 
-// options: {
-//   query: (...args: P) => T;
-//   mutate?: (state: T, ...args: P) => void;
-// }
-
-export function entity<P, T>(options?: RemoteStateOptions<T>): Entity<P, T> {
+export function entity<P, T>(options: EntityOptions<T> = {}): Entity<P, T> {
   const scope = `entity-${globalKeyId += 1}`;
   const entityFactory: Entity<P, T> = (...params) => {
     const key = `${scope}-${params.join('$')}`;
-    const entityById: EntityById<T> = (value) => ({ key, value });
+    const entityById: EntityById<T> = (value) => ({ key, value, options });
     entityById.key = key;
     entityById.options = options;
     return entityById;
@@ -36,14 +38,3 @@ export function entity<P, T>(options?: RemoteStateOptions<T>): Entity<P, T> {
   entityFactory.scope = scope;
   return entityFactory;
 }
-
-// const note = entity({
-//   query: (id) => ({ id }),
-//   mutate: (state, id) => updateNote(state, id),
-// });
-
-// const note: Entity<string, string> = entity<string, string>({
-//   query: (id) => Promise.resolve(note(id)('note value')),
-// });
-// note('5');
-// useRemoteState(user('254234'))
