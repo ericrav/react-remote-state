@@ -4,11 +4,12 @@ interface RemoteStateOptions<T> {
   meta?: string;
 }
 export interface Entity<P, T> {
+  (): EntityById<T>;
   (...params: P extends any[] ? P : [P]): EntityById<T>;
   scope: string;
 }
 
-interface EntityById<T> {
+export interface EntityById<T> {
   (value: T): ({ key: string; value: T });
   key: string;
   options?: RemoteStateOptions<T>

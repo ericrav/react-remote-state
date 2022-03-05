@@ -1,15 +1,16 @@
 import {
   useCallback, useEffect, useRef, useState,
 } from 'react';
+import { EntityById } from './Entity';
 import { RemoteStateOptions } from './RemoteStateOptions';
 import { useEntityCache } from './useEntityCache';
 
-export function useRemoteState<T>(key: string, options: RemoteStateOptions<T>) {
+export function useRemoteState<T>(entity: EntityById<T>, options: RemoteStateOptions<T> = {}) {
   const optionsRef = useRef(options);
   optionsRef.current = options;
   const cache = useEntityCache();
   const getValue = () => {
-    const cacheValue = cache.get(key);
+    const cacheValue = cache.get(entity.key);
     return cacheValue ? cacheValue.value : options.defaultValue;
   };
   const [state, setState] = useState(getValue());
@@ -20,8 +21,8 @@ export function useRemoteState<T>(key: string, options: RemoteStateOptions<T>) {
 
   const localUpdate = useCallback((value: T) => {
     setState(value);
-    cache.set(key, value);
-  }, [cache, key]);
+    cache.set(entity.key, value);
+  }, [cache, entity.key]);
 
   useEffect(() => {
     const { query, defaultValue } = optionsRef.current;
@@ -34,12 +35,12 @@ export function useRemoteState<T>(key: string, options: RemoteStateOptions<T>) {
     if (query) {
       setLoading(true);
       (async () => {
-        const result = await query(key);
+        const result = await query(entity.key);
         localUpdate(result);
         setLoading(false);
       })();
     }
-  }, [cache, key, localUpdate]);
+  }, [cache, entity.key, localUpdate]);
 
   return [state, localUpdate, { loading }] as const;
 }
