@@ -10,7 +10,7 @@ export function useRemoteState<T>(entity: EntityById<T>, options: RemoteStateOpt
   optionsRef.current = options;
   const cache = useEntityCache();
   const getValue = () => {
-    const cacheValue = cache.get(entity.key);
+    const cacheValue = cache.get(entity);
     return cacheValue ? cacheValue.value : options.defaultValue;
   };
   const [state, setState] = useState(getValue());
@@ -21,15 +21,15 @@ export function useRemoteState<T>(entity: EntityById<T>, options: RemoteStateOpt
 
   const localUpdate = useCallback((value: T) => {
     setState(value);
-    cache.set(entity.key, value);
-  }, [cache, entity.key]);
+    cache.set(entity, value);
+  }, [cache, entity.scope, entity.key]);
 
   useEffect(() => {
     const { query, defaultValue } = optionsRef.current;
 
     // when args change, re-assign default value
     if (stateRef.current !== defaultValue) {
-      localUpdate(getValueRef.current());
+      localUpdate(getValueRef.current()!);
     }
 
     if (query) {

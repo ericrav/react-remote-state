@@ -1,12 +1,18 @@
-export class EntityCache {
-  private cache: Record<string, any> = {};
+import { Entity, EntityById } from '../public-api/Entity';
 
-  public get(key: string) {
-    return this.cache[key];
+export class EntityCache {
+  private cache = new WeakMap<Entity<any, any>, Record<string, any>>();
+
+  public get<T>(entity: EntityById<T>): { value: T } | undefined {
+    return this.cache.get(entity.scope)?.[entity.key];
   }
 
-  public set(key: string, value: any) {
-    this.cache[key] = {
+  public set<T>(entity: EntityById<T>, value: T) {
+    if (!this.cache.has(entity.scope)) {
+      this.cache.set(entity.scope, {});
+    }
+    const map = this.cache.get(entity.scope)!;
+    map[entity.key] = {
       value,
       timestamp: Date.now(),
     };

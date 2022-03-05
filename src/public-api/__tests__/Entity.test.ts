@@ -10,7 +10,7 @@ test('entity', async () => {
   });
   expect(note('5')('value')).toMatchInlineSnapshot(`
 Object {
-  "key": "entity-1-5",
+  "key": "5",
   "options": Object {
     "query": [Function],
   },
@@ -18,7 +18,7 @@ Object {
 }
 `);
   const value = await note('3').options?.query?.('3');
-  expect(value).toEqual({ key: 'entity-1-3', value: 'note value', options: expect.any(Object) });
+  expect(value).toEqual({ key: '3', value: 'note value', options: expect.any(Object) });
 });
 
 test('derive entities', () => {
