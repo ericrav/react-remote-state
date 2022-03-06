@@ -3,6 +3,9 @@
   "version": "0.0.0",
   "author": "Eric Rabinowitz",
   "packageManager": "yarn@3.2.0",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
   "peerDependencies": {
     "react": ">=16.8"
   },
