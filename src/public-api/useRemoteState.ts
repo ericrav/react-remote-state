@@ -1,17 +1,12 @@
 import {
-  useCallback, useEffect, useMemo, useRef, useState,
+  useCallback, useEffect, useMemo, useState,
 } from 'react';
 import { hashEntity } from '../utils/hashEntity';
 import { useQuery } from '../utils/useQuery';
 import { EntityById } from './Entity';
 import { RemoteStateOptions } from './RemoteStateOptions';
 import { useEntityCache } from './useEntityCache';
-
-const useRefAndUpdate = <T>(value: T) => {
-  const ref = useRef(value);
-  ref.current = value;
-  return ref;
-};
+import { useRefAndUpdate } from '../utils/useRefAndUpdate';
 
 export function useRemoteState<P, T>(
   entity: EntityById<P, T>,

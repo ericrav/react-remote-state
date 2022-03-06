@@ -4,6 +4,7 @@ import { RemoteStateOptions } from '../public-api/RemoteStateOptions';
 import { useEntityCache } from '../public-api/useEntityCache';
 import { hashEntity } from './hashEntity';
 import { shouldRevalidate } from './shouldRevalidate';
+import { useRefAndUpdate } from './useRefAndUpdate';
 
 export function useQuery<P, T>(
   entity: EntityById<P, T>,
@@ -14,17 +15,17 @@ export function useQuery<P, T>(
 
   const data = useRef<T>();
 
-  const queryRef = useRef(options.query ?? entity.options?.query);
-  queryRef.current = options.query ?? entity.options?.query;
+  const optionsRef = useRefAndUpdate(options);
 
-  const entityRef = useRef(entity);
-  entityRef.current = entity;
+  const queryRef = useRefAndUpdate(options.query ?? entity.options?.query);
+
+  const entityRef = useRefAndUpdate(entity);
 
   const entityHashKey = hashEntity(entity);
 
   useEffect(() => {
     const query = queryRef.current;
-    if (query && shouldRevalidate(cache, entityRef.current)) {
+    if (query && shouldRevalidate(cache, entityRef.current, optionsRef.current)) {
       setLoading(true);
       cache.queries.set(entityRef.current, query);
       (async () => {
@@ -35,7 +36,7 @@ export function useQuery<P, T>(
         setLoading(false);
       })();
     }
-  }, [cache, entityHashKey, entity.scope]);
+  }, [cache, entityHashKey, entity.scope, queryRef, entityRef, optionsRef]);
 
   return { loading, data: data.current };
 }

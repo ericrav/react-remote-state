@@ -1,9 +1,13 @@
 import { EntityById } from '../public-api/Entity';
+import { RemoteStateOptions } from '../public-api/RemoteStateOptions';
 import { EntityCache } from './EntityCache';
 
 export function shouldRevalidate<P, T>(
   cache: EntityCache,
   entity: EntityById<P, T>,
+  {
+    queryTTL = 60000,
+  }: RemoteStateOptions<P, T>,
 ): boolean {
   if (cache.queries.has(entity)) {
     return false;
@@ -15,7 +19,7 @@ export function shouldRevalidate<P, T>(
   }
   const age = Date.now() - cacheValue.timestamp;
 
-  if (age > 1000) return true;
+  if (age > queryTTL) return true;
 
   return false;
 }
