@@ -1,4 +1,5 @@
 import { Entity, EntityById } from '../public-api/Entity';
+import { hashEntity } from './hashEntity';
 
 interface CacheValue<T> {
   value: T;
@@ -7,10 +8,28 @@ interface CacheValue<T> {
 
 type CacheMap<T = any> = Record<string, CacheValue<T>>;
 
-const hashEntity = (entity: EntityById<any, any>) => entity.params.join('$');
-
 export class EntityCache {
   private cache = new WeakMap<Entity<any, any>, CacheMap>();
+
+  private subscribers = new WeakMap<Entity<any, any>, Set<() => void>>();
+
+  public subscribe(entity: EntityById<any, any>, callback: () => void) {
+    if (!this.subscribers.has(entity.scope)) {
+      this.subscribers.set(entity.scope, new Set());
+    }
+    const set = this.subscribers.get(entity.scope)!;
+    set.add(callback);
+    return function unsubscribe() {
+      set.delete(callback);
+    };
+  }
+
+  private notifySubscribers(entity: EntityById<any, any>) {
+    const set = this.subscribers.get(entity.scope);
+    if (set) {
+      set.forEach((cb) => cb());
+    }
+  }
 
   public get<T>(entity: EntityById<any, T>): CacheValue<T> | undefined {
     return this.cache.get(entity.scope)?.[hashEntity(entity)];
@@ -25,5 +44,6 @@ export class EntityCache {
       value,
       timestamp: Date.now(),
     };
+    this.notifySubscribers(entity);
   }
 }

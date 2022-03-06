@@ -1,6 +1,7 @@
 import {
   useCallback, useEffect, useRef, useState,
 } from 'react';
+import { useQuery } from '../utils/useQuery';
 import { EntityById } from './Entity';
 import { RemoteStateOptions } from './RemoteStateOptions';
 import { useEntityCache } from './useEntityCache';
@@ -20,7 +21,18 @@ export function useRemoteState<P, T>(
   const stateRef = useRef(state);
   const getValueRef = useRef(getValue);
   getValueRef.current = getValue;
-  const [loading, setLoading] = useState(false);
+  const { loading } = useQuery(entity, options);
+
+  useEffect(() => {
+    const unsubscribe = cache.subscribe(entity, () => {
+      const { value } = cache.get(entity)!;
+      if (value !== stateRef.current) {
+        setState(value);
+      }
+    });
+
+    return unsubscribe;
+  }, [cache, entity]);
 
   const localUpdate = useCallback(
     (value: T) => {
@@ -32,20 +44,11 @@ export function useRemoteState<P, T>(
   );
 
   useEffect(() => {
-    const { query, defaultValue } = optionsRef.current;
+    const { defaultValue } = optionsRef.current;
 
     // when args change, re-assign default value
     if (stateRef.current !== defaultValue) {
       localUpdate(getValueRef.current()!);
-    }
-
-    if (query) {
-      setLoading(true);
-      (async () => {
-        const result = (await query(...entity.params)) as T;
-        localUpdate(result);
-        setLoading(false);
-      })();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cache, entity.params[0], entity.params[1], localUpdate]);
