@@ -25,9 +25,9 @@ export function useRemoteState<P, T>(
 
   useEffect(() => {
     const unsubscribe = cache.subscribe(entity, () => {
-      const { value } = cache.get(entity)!;
-      if (value !== stateRef.current) {
-        setState(value);
+      const cacheValue = cache.get(entity)!;
+      if (cacheValue && cacheValue.value !== stateRef.current) {
+        setState(cacheValue.value);
       }
     });
 
@@ -51,7 +51,7 @@ export function useRemoteState<P, T>(
       localUpdate(getValueRef.current()!);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cache, entity.params[0], entity.params[1], localUpdate]);
+  }, [cache, localUpdate]);
 
   return [state, localUpdate, { loading }] as const;
 }
