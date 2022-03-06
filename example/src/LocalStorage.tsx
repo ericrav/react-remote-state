@@ -15,6 +15,7 @@ export function LocalStorage() {
 const storage = entity({
   defaultValue: '',
   query: (key: string) => new Promise<string>(resolve => {
+    console.log('query', key);
     setTimeout(() => resolve(localStorage.getItem(key) || ''), 1500);
   }),
   mutate: (value, key) => localStorage.setItem(key, value),

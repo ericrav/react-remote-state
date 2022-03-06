@@ -7,6 +7,8 @@ interface CacheValue<T> {
 }
 
 export class EntityCache extends BaseCache<CacheValue<any>> {
+  public queries = new BaseCache<() => any>();
+
   public get<T>(entity: EntityById<any, T>): CacheValue<T> | undefined {
     return super.get(entity);
   }

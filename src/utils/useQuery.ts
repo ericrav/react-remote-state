@@ -3,6 +3,7 @@ import { EntityById } from '../public-api/Entity';
 import { RemoteStateOptions } from '../public-api/RemoteStateOptions';
 import { useEntityCache } from '../public-api/useEntityCache';
 import { hashEntity } from './hashEntity';
+import { shouldRevalidate } from './shouldRevalidate';
 
 export function useQuery<P, T>(
   entity: EntityById<P, T>,
@@ -23,12 +24,14 @@ export function useQuery<P, T>(
 
   useEffect(() => {
     const query = queryRef.current;
-    if (query && !cache.has(entityRef.current)) {
+    if (query && shouldRevalidate(cache, entityRef.current)) {
       setLoading(true);
+      cache.queries.set(entityRef.current, query);
       (async () => {
         const result = (await query(...entityRef.current.params)) as T;
         cache.set(entityRef.current, result);
         data.current = result;
+        cache.queries.delete(entityRef.current);
         setLoading(false);
       })();
     }

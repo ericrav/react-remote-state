@@ -44,4 +44,11 @@ export class BaseCache<V> {
     map[hashEntity(entity)] = value;
     this.notifySubscribers(entity);
   }
+
+  public delete(entity: EntityById) {
+    const map = this.cache.get(entity.scope);
+    if (map) {
+      delete map[hashEntity(entity)];
+    }
+  }
 }
