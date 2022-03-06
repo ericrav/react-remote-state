@@ -17,17 +17,23 @@ export function useRemoteState<P, T>(
   entity: EntityById<P, T>,
   options: RemoteStateOptions<P, T> = {},
 ) {
+  const mergedOptions = {
+    ...entity.options,
+    ...options,
+  };
+
   const cache = useEntityCache();
   const getValue = (): T | undefined => {
     const cacheValue = cache.get(entity);
-    return cacheValue ? cacheValue.value : options.defaultValue;
+    return cacheValue ? cacheValue.value : mergedOptions.defaultValue;
   };
   const [state, setState] = useState(getValue());
   const ref = useRefAndUpdate({
     state,
     getValue,
+    options: mergedOptions,
   });
-  const { loading } = useQuery(entity, options);
+  const { loading } = useQuery(entity, mergedOptions);
 
   const entityHash = hashEntity(entity);
   const entityChanges = useMemo(() => [entity.scope, entityHash], [entity.scope, entityHash]);
@@ -46,11 +52,11 @@ export function useRemoteState<P, T>(
   const localUpdate = useCallback(
     (value: T) => {
       setState(value);
-      options.mutate?.(value, ...entity.params);
+      mergedOptions.mutate?.(value, ...entity.params);
       cache.set(entity, value);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [cache, entityChanges, options.mutate],
+    [cache, entityChanges, mergedOptions.mutate],
   );
 
   useEffect(() => {

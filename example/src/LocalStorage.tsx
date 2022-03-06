@@ -12,20 +12,18 @@ export function LocalStorage() {
   );
 }
 
-const storage = entity<[string], any>({
-  query: (key) => localStorage.getItem(key) || '',
+const storage = entity({
+  defaultValue: '',
+  query: (key: string) => new Promise<string>(resolve => {
+    setTimeout(() => resolve(localStorage.getItem(key) || ''), 1500);
+  }),
   mutate: (value, key) => localStorage.setItem(key, value),
 });
 
 function TextArea() {
   const [id, setID] = useState('textA');
-  const [state, setState, { loading }] = useRemoteState(storage(id), {
-    defaultValue: '',
-    query: (key) => new Promise(resolve => {
-      setTimeout(() => resolve(localStorage.getItem(key) || ''), 1500);
-    }),
-    mutate: (value, key) => localStorage.setItem(key, value),
-  });
+  const [state, setState, { loading }] = useRemoteState(storage(id));
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', maxWidth: 400 }}>
       <select value={id} onChange={(e) => setID(e.target.value)}>
