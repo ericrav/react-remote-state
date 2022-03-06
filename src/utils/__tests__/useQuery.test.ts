@@ -14,7 +14,7 @@ it('should dedupe queries', async () => {
   expect(query).toHaveBeenCalledTimes(1);
 });
 
-it.only('revalidates query after set time', async () => {
+it('revalidates query after set time', async () => {
   jest.spyOn(Date, 'now');
 
   const timeSpy = (Date.now) as jest.Mock;
