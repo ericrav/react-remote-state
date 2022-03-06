@@ -22,10 +22,6 @@ export interface EntityById<T> {
   options?: EntityOptions<T>
 }
 
-let globalKeyId = 0;
-
-export function __test_reset_entity_key() { globalKeyId = 0; } // eslint-disable-line
-
 export function entity<P, T>(options: EntityOptions<T> = {}): Entity<P, T> {
   const entityFactory: Entity<P, T> = (...params) => {
     const key = params.join('$');

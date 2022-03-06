@@ -1,8 +1,4 @@
-import { Entity, entity, __test_reset_entity_key } from '../Entity';
-
-beforeEach(() => {
-  __test_reset_entity_key();
-});
+import { Entity, entity } from '../Entity';
 
 test('entity', async () => {
   const note: Entity<string, string> = entity<string, string>({

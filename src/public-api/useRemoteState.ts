@@ -22,6 +22,7 @@ export function useRemoteState<T>(entity: EntityById<T>, options: RemoteStateOpt
   const localUpdate = useCallback((value: T) => {
     setState(value);
     cache.set(entity, value);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cache, entity.scope, entity.key]);
 
   useEffect(() => {
