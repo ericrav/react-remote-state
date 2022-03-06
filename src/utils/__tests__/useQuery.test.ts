@@ -14,6 +14,21 @@ it('should dedupe queries', async () => {
   expect(query).toHaveBeenCalledTimes(1);
 });
 
+it('shares loading states', async () => {
+  const [useQ1] = testHook(useQuery);
+  const [useQ2] = testHook(useQuery);
+  const query = jest.fn(() => new Promise(() => {}));
+  const foobar = entity<[number], any>({ query });
+  {
+    const { loading } = useQ1(foobar(1));
+    expect(loading).toBe(true);
+  }
+  {
+    const { loading } = useQ2(foobar(1));
+    expect(loading).toBe(true);
+  }
+});
+
 it('revalidates query after set time', async () => {
   jest.spyOn(Date, 'now');
 

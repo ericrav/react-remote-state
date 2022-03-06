@@ -1,4 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import {
+  useEffect, useMemo, useRef, useState,
+} from 'react';
 import { EntityById } from '../public-api/Entity';
 import { RemoteStateOptions } from '../public-api/RemoteStateOptions';
 import { useEntityCache } from '../public-api/useEntityCache';
@@ -10,8 +12,8 @@ export function useQuery<P, T>(
   entity: EntityById<P, T>,
   options: RemoteStateOptions<P, T> = {},
 ) {
-  const [loading, setLoading] = useState(false);
   const cache = useEntityCache();
+  const [loading, setLoading] = useState(cache.queries.has(entity));
 
   const data = useRef<T>();
 
@@ -22,6 +24,22 @@ export function useQuery<P, T>(
   const entityRef = useRefAndUpdate(entity);
 
   const entityHashKey = hashEntity(entity);
+
+  const entityHash = hashEntity(entity);
+  const entityChanges = useMemo(() => [entity.scope, entityHash], [entity.scope, entityHash]);
+
+  useEffect(() => {
+    setLoading(cache.queries.has(entityRef.current));
+    const unsubscribe = cache.queries.subscribe(entityRef.current, () => {
+      if (cache.queries.has(entityRef.current)) {
+        setLoading(true);
+      } else {
+        setLoading(false);
+      }
+    });
+
+    return unsubscribe;
+  }, [cache.queries, entityChanges, entityRef]);
 
   useEffect(() => {
     const query = queryRef.current;

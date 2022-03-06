@@ -49,6 +49,7 @@ export class BaseCache<V> {
     const map = this.cache.get(entity.scope);
     if (map) {
       delete map[hashEntity(entity)];
+      this.notifySubscribers(entity);
     }
   }
 }

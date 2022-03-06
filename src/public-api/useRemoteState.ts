@@ -42,7 +42,8 @@ export function useRemoteState<P, T>(
     });
 
     return unsubscribe;
-  }, [cache, entity, ref]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cache, entityChanges, ref]);
 
   const localUpdate = useCallback(
     (value: T) => {
