@@ -1,6 +1,7 @@
 import {
-  useCallback, useEffect, useRef, useState,
+  useCallback, useEffect, useMemo, useRef, useState,
 } from 'react';
+import { hashEntity } from '../utils/hashEntity';
 import { useQuery } from '../utils/useQuery';
 import { EntityById } from './Entity';
 import { RemoteStateOptions } from './RemoteStateOptions';
@@ -19,9 +20,13 @@ export function useRemoteState<P, T>(
   };
   const [state, setState] = useState(getValue());
   const stateRef = useRef(state);
+  stateRef.current = state;
   const getValueRef = useRef(getValue);
   getValueRef.current = getValue;
   const { loading } = useQuery(entity, options);
+
+  const entityHash = hashEntity(entity);
+  const entityChanges = useMemo(() => [entity.scope, entityHash], [entity.scope, entityHash]);
 
   useEffect(() => {
     const unsubscribe = cache.subscribe(entity, () => {
@@ -41,18 +46,19 @@ export function useRemoteState<P, T>(
       cache.set(entity, value);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [cache, entity.scope, entity.params[0], entity.params[1]],
+    [cache, entityChanges],
   );
 
   useEffect(() => {
-    const { defaultValue } = optionsRef.current;
+    const value = getValueRef.current();
 
     // when args change, re-assign default value
-    if (stateRef.current !== defaultValue) {
-      localUpdate(getValueRef.current()!);
+    if (stateRef.current !== value) {
+      setState(value);
+      cache.set(entity, value as T);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cache, localUpdate]);
+  }, [cache, entityChanges]);
 
   return [state, localUpdate, { loading }] as const;
 }
