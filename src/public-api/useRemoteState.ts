@@ -5,11 +5,14 @@ import { EntityById } from './Entity';
 import { RemoteStateOptions } from './RemoteStateOptions';
 import { useEntityCache } from './useEntityCache';
 
-export function useRemoteState<T>(entity: EntityById<T>, options: RemoteStateOptions<T> = {}) {
+export function useRemoteState<P, T>(
+  entity: EntityById<P, T>,
+  options: RemoteStateOptions<P, T> = {},
+) {
   const optionsRef = useRef(options);
   optionsRef.current = options;
   const cache = useEntityCache();
-  const getValue = () => {
+  const getValue = (): T | undefined => {
     const cacheValue = cache.get(entity);
     return cacheValue ? cacheValue.value : options.defaultValue;
   };
@@ -19,11 +22,14 @@ export function useRemoteState<T>(entity: EntityById<T>, options: RemoteStateOpt
   getValueRef.current = getValue;
   const [loading, setLoading] = useState(false);
 
-  const localUpdate = useCallback((value: T) => {
-    setState(value);
-    cache.set(entity, value);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cache, entity.scope, entity.key]);
+  const localUpdate = useCallback(
+    (value: T) => {
+      setState(value);
+      cache.set(entity, value);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [cache, entity.scope, entity.params[0], entity.params[1]],
+  );
 
   useEffect(() => {
     const { query, defaultValue } = optionsRef.current;
@@ -36,12 +42,13 @@ export function useRemoteState<T>(entity: EntityById<T>, options: RemoteStateOpt
     if (query) {
       setLoading(true);
       (async () => {
-        const result = await query(entity.key);
+        const result = (await query(...entity.params)) as T;
         localUpdate(result);
         setLoading(false);
       })();
     }
-  }, [cache, entity.key, localUpdate]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cache, entity.params[0], entity.params[1], localUpdate]);
 
   return [state, localUpdate, { loading }] as const;
 }

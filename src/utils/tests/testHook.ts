@@ -1,10 +1,10 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { renderHook, RenderResult, WaitForNextUpdate } from '@testing-library/react-hooks';
 
-export function testHook<P extends any[], T>(hook: (...args: P) => T) {
+export function testHook<P extends any[], R, T extends (...args: P) => R>(hook: T) {
   let firstCall = true;
   let rerenderHook: (props: P) => void;
-  let hookResult: RenderResult<T>;
+  let hookResult: RenderResult<R>;
   const extra = {} as {
     waitForNextUpdate: WaitForNextUpdate
   };
@@ -26,5 +26,5 @@ export function testHook<P extends any[], T>(hook: (...args: P) => T) {
     return hookResult.current;
   };
 
-  return [useHook, extra] as const;
+  return [useHook as T, extra] as const;
 }

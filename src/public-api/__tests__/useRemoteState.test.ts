@@ -44,6 +44,18 @@ test('query function', async () => {
     expect(state).toEqual('data');
     expect(loading).toEqual(false);
   }
+
+  interface Test {
+    name: string;
+    count: number;
+  }
+  const testEnt = entity<[string, number], Test>();
+  useTestRemoteState(testEnt('argument', 2), { query: (name, count) => ({ name, count }) });
+  await hook.waitForNextUpdate();
+  {
+    const [state] = useTestRemoteState(testEnt('argument', 2));
+    expect(state).toEqual({ count: 2, name: 'argument' });
+  }
 });
 
 test('caching', async () => {

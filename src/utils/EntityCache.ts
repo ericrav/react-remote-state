@@ -7,19 +7,21 @@ interface CacheValue<T> {
 
 type CacheMap<T = any> = Record<string, CacheValue<T>>;
 
+const hashEntity = (entity: EntityById<any, any>) => entity.params.join('$');
+
 export class EntityCache {
   private cache = new WeakMap<Entity<any, any>, CacheMap>();
 
-  public get<T>(entity: EntityById<T>): CacheValue<T> | undefined {
-    return this.cache.get(entity.scope)?.[entity.key];
+  public get<T>(entity: EntityById<any, T>): CacheValue<T> | undefined {
+    return this.cache.get(entity.scope)?.[hashEntity(entity)];
   }
 
-  public set<T>(entity: EntityById<T>, value: T) {
+  public set<T>(entity: EntityById<any, T>, value: T) {
     if (!this.cache.has(entity.scope)) {
       this.cache.set(entity.scope, {});
     }
     const map = this.cache.get(entity.scope)!;
-    map[entity.key] = {
+    map[hashEntity(entity)] = {
       value,
       timestamp: Date.now(),
     };

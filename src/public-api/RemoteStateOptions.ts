@@ -1,5 +1,6 @@
-export interface RemoteStateOptions<T> {
-  query?: (args: string) => T | Promise<T>;
+import type { EntityValue, Params } from './Entity';
+
+export interface RemoteStateOptions<P, T> {
+  query?: (...params: Params<P>) => T | Promise<T> | Promise<EntityValue<T>>;
   defaultValue?: T;
-  meta?: string;
 }
