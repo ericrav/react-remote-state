@@ -10,15 +10,10 @@ interface EntityOptions<P, T> extends RemoteStateOptions<P, T> {
   derive?: (value: T) => EntityValue[];
 }
 
-// export interface Entity<P, T> {
-//   (): EntityById<P, T>;
-//   (...params: P extends any[] ? P : [P]): EntityById<P, T>;
-// }
-
 export type Params<P> = P extends any[] ? P : [P] | [];
 export type Entity<P, T> = (...params: Params<P>) => EntityById<P, T>;
 
-export interface EntityById<P, T> {
+export interface EntityById<P = any, T = any> {
   (value: T): EntityValue<P, T>;
   scope: Entity<any, T>;
   params: Params<P>;

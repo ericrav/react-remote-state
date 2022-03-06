@@ -1,8 +1,8 @@
 import { Entity, entity } from '../Entity';
 
 test('entity', async () => {
-  const note: Entity<string, string> = entity<string, string>({
-    query: (id) => Promise.resolve(note(id)('note value')),
+  const note: Entity<[id: string], string> = entity({
+    query: (id) => Promise.resolve(`note value ${id}`),
   });
   expect(note('5')('value')).toMatchInlineSnapshot(`
 Object {
@@ -14,7 +14,7 @@ Object {
 }
 `);
   const value = await note('3').options?.query?.('3');
-  expect(value).toEqual({ key: '3', value: 'note value', options: expect.any(Object) });
+  expect(value).toEqual('note value 3');
 });
 
 test('derive entities', () => {
