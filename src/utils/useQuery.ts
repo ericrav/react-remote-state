@@ -23,7 +23,7 @@ export function useQuery<P, T>(
 
   useEffect(() => {
     const query = queryRef.current;
-    if (query) {
+    if (query && !cache.has(entityRef.current)) {
       setLoading(true);
       (async () => {
         const result = (await query(...entityRef.current.params)) as T;

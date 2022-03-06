@@ -31,6 +31,11 @@ export class EntityCache {
     }
   }
 
+  public has(entity: EntityById<any, any>): boolean {
+    const map = this.cache.get(entity.scope);
+    return !!map && !!map[hashEntity(entity)];
+  }
+
   public get<T>(entity: EntityById<any, T>): CacheValue<T> | undefined {
     return this.cache.get(entity.scope)?.[hashEntity(entity)];
   }

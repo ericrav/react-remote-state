@@ -19,23 +19,25 @@ const storage = entity<[string], any>({
 
 function TextArea() {
   const [id, setID] = useState('textA');
-  const [state, setState] = useRemoteState(storage(id), {
+  const [state, setState, { loading }] = useRemoteState(storage(id), {
     defaultValue: '',
-    query: (key) => {
-      console.log('query', key)
-      return localStorage.getItem(key) || ''
-    },
+    query: (key) => new Promise(resolve => {
+      setTimeout(() => resolve(localStorage.getItem(key) || ''), 1500);
+    }),
     mutate: (value, key) => localStorage.setItem(key, value),
   });
-  console.log(state);
   return (
     <div style={{ display: 'flex', flexDirection: 'column', maxWidth: 400 }}>
-      <select value={id} onChange={e => setID(e.target.value)}>
-        <option value='textA'>Text A</option>
-        <option value='textB'>Text B</option>
-        <option value='textC'>Text C</option>
+      <select value={id} onChange={(e) => setID(e.target.value)}>
+        <option value="textA">Text A</option>
+        <option value="textB">Text B</option>
+        <option value="textC">Text C</option>
       </select>
-      <textarea value={state} onChange={(e) => setState(e.target.value)} />
+      {loading ? (
+        'Loading...'
+      ) : (
+        <textarea value={state} onChange={(e) => setState(e.target.value)} />
+      )}
     </div>
   );
 }

@@ -26,6 +26,7 @@ module.exports = {
   rules: {
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/no-non-null-assertion': 'off',
+    '@typescript-eslint/no-shadow': 'off',
     'react/jsx-props-no-spreading': 'off',
     'react/require-default-props': 'off',
     'import/prefer-default-export': 'off',
