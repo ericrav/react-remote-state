@@ -12,15 +12,20 @@ export function useRemoteState<P, T>(
   entity: EntityById<P, T>,
   options: RemoteStateOptions<P, T> = {},
 ) {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const entityMemo = useMemo(() => entity, [entity.scope, hashEntity(entity)]);
+
   const mergedOptions = {
     ...entity.options,
     ...options,
   };
 
+  const { mutate, defaultValue } = mergedOptions;
+
   const cache = useEntityCache();
   const getValue = (): T | undefined => {
     const cacheValue = cache.get(entity);
-    return cacheValue ? cacheValue.value : mergedOptions.defaultValue;
+    return cacheValue ? cacheValue.value : defaultValue;
   };
   const [state, setState] = useState(getValue());
   const ref = useRefAndUpdate({
@@ -30,29 +35,24 @@ export function useRemoteState<P, T>(
   });
   const { loading } = useQuery(entity, mergedOptions);
 
-  const entityHash = hashEntity(entity);
-  const entityChanges = useMemo(() => [entity.scope, entityHash], [entity.scope, entityHash]);
-
+  /** Subscribe to entity changes in cache */
   useEffect(() => {
-    const unsubscribe = cache.subscribe(entity, () => {
-      const cacheValue = cache.get(entity)!;
+    const unsubscribe = cache.subscribe(entityMemo, () => {
+      const cacheValue = cache.get(entityMemo)!;
       if (cacheValue && cacheValue.value !== ref.current.state) {
         setState(cacheValue.value);
       }
     });
 
     return unsubscribe;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cache, entityChanges, ref]);
+  }, [cache, entityMemo, ref]);
 
-  const localUpdate = useCallback(
+  const updateState = useCallback(
     (value: T) => {
-      setState(value);
-      mergedOptions.mutate?.(value, ...entity.params);
-      cache.set(entity, value);
+      mutate?.(value, ...entityMemo.params);
+      cache.set(entityMemo, value);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [cache, entityChanges, mergedOptions.mutate],
+    [cache, entityMemo, mutate],
   );
 
   useEffect(() => {
@@ -61,11 +61,10 @@ export function useRemoteState<P, T>(
 
     // when args change, re-assign default value
     if (state !== value) {
-      setState(value);
-      cache.set(entity, value as T);
+      // setState(value);
+      cache.set(entityMemo, value as T);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cache, entityChanges]);
+  }, [cache, entityMemo, ref]);
 
-  return [state, localUpdate, { loading }] as const;
+  return [state, updateState, { loading }] as const;
 }
