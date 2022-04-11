@@ -6,11 +6,14 @@ interface Item {
   id: string;
   title: string;
   count: number;
+  serverValue?: number;
 }
 
 const emptyItem = entity();
 const querySpy = jest.fn((id: string) => Promise.resolve({ id, title: 'Foobar', count: 7 } as Item));
-const mutateSpy = jest.fn((newValue: Item): Promise<Item> => Promise.resolve(newValue));
+const mutateSpy = jest.fn(
+  (newValue: Item): Promise<Item> => Promise.resolve({ ...newValue, serverValue: 1337 }),
+);
 const itemWithOptions = entity({
   query: querySpy,
   mutate: mutateSpy,
@@ -47,6 +50,17 @@ test('itemWithOptions', async () => {
     });
     expect(mutateSpy).toHaveBeenCalledWith({ id: 'item1', title: 'Baz', count: 8 }, 'item1');
   }
+  {
+    const [state] = result.current;
+    expect(state).toEqual({ id: 'item1', title: 'Baz', count: 8 });
+  }
+  await waitForNextUpdate();
+  {
+    const [state] = result.current;
+    expect(state).toEqual({
+      id: 'item1', title: 'Baz', count: 8, serverValue: 1337,
+    });
+  }
 });
 
 test('setState captures closure', async () => {
@@ -73,4 +87,5 @@ test('setState captures closure', async () => {
   });
   expect(mutateSpy).not.toHaveBeenCalled();
   expect(mutate2).toHaveBeenCalledWith({ id: 'item1', title: 'Baz', count: 9 }, 'item1');
+  await waitForNextUpdate();
 });

@@ -52,8 +52,13 @@ export function useRemoteState<P, T>(
       const value = typeof setter === 'function'
         ? (setter as (prev: T) => T)(ref.current.getValue() as T)
         : setter;
-      mutate?.(value, ...entityMemo.params);
+
       cache.set(entityMemo, value);
+      if (mutate) {
+        Promise.resolve(mutate(value, ...entityMemo.params)).then((result) => {
+          cache.set(entityMemo, result);
+        });
+      }
     },
     [cache, entityMemo, mutate, ref],
   );
