@@ -48,11 +48,14 @@ export function useRemoteState<P, T>(
   }, [cache, entityMemo, ref]);
 
   const updateState = useCallback(
-    (value: T) => {
+    (setter: T | ((prev: T) => T)) => {
+      const value = typeof setter === 'function'
+        ? (setter as (prev: T) => T)(ref.current.getValue() as T)
+        : setter;
       mutate?.(value, ...entityMemo.params);
       cache.set(entityMemo, value);
     },
-    [cache, entityMemo, mutate],
+    [cache, entityMemo, mutate, ref],
   );
 
   useEffect(() => {

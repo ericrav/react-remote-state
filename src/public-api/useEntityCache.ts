@@ -7,3 +7,8 @@ export function useEntityCache() {
 
   return globalEntityCache;
 }
+
+// export for tests only
+export function resetEntityCache() {
+  globalEntityCache = new EntityCache();
+}
