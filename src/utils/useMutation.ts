@@ -1,11 +1,12 @@
-import {
-  useCallback,
-  useEffect,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { EntityById } from '../public-api/Entity';
-import { RemoteStateOptions } from '../public-api/RemoteStateOptions';
+import {
+  MutateOptions,
+  RemoteStateOptions,
+} from '../public-api/RemoteStateOptions';
 import { useEntityCache } from '../public-api/useEntityCache';
+import { EntityCache } from './EntityCache';
+import { useRefAndUpdate } from './useRefAndUpdate';
 
 export function useMutation<P, T>(
   entity: EntityById<P, T>,
@@ -14,7 +15,11 @@ export function useMutation<P, T>(
   const cache = useEntityCache();
   const [loading, setLoading] = useState(cache.mutations.has(entity));
 
-  const { mutate } = options;
+  const { mutate, mutateOptions } = options;
+
+  const ref = useRefAndUpdate({
+    mutateOptions,
+  });
 
   /** Subscribe to mutations cache to set loading state */
   useEffect(() => {
@@ -39,13 +44,46 @@ export function useMutation<P, T>(
       cache.update(entity, value);
 
       if (mutate) {
-        Promise.resolve(mutate(value, ...entity.params)).then((result) => {
-          cache.set(entity, result);
-        });
+        handleMutation(
+          () => mutate(value, ...entity.params),
+          entity,
+          cache,
+          ref.current.mutateOptions,
+        );
       }
     },
-    [cache, entity, mutate],
+    [cache, entity, mutate, ref],
   );
 
   return [updateState, { loading }] as const;
+}
+
+function handleMutation<P, T>(
+  mutateFn: () => any,
+  entity: EntityById<P, T>,
+  cache: EntityCache,
+  options: MutateOptions = {},
+) {
+  const { debounce } = options;
+
+  const mutationCache = cache.mutations.get(entity);
+
+  const execute = () => {
+    Promise.resolve(mutateFn()).then((result) => {
+      cache.set(entity, result);
+      cache.mutations.delete(entity);
+    });
+  };
+
+  if (debounce) {
+    window.clearTimeout(mutationCache?.debounceTimer);
+
+    const debounceTimer = window.setTimeout(execute, debounce);
+    cache.mutations.set(entity, {
+      ...mutationCache,
+      debounceTimer,
+    });
+  } else {
+    execute();
+  }
 }

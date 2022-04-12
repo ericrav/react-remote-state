@@ -7,10 +7,15 @@ interface CacheValue<T> {
   timestamp: number;
 }
 
+interface Mutation {
+  debounceTimer?: ReturnType<Window['setTimeout']>;
+  mutation?: () => any;
+}
+
 export class EntityCache extends BaseCache<CacheValue<any>> {
   public queries = new BaseCache<() => any>();
 
-  public mutations = new BaseCache<() => any>();
+  public mutations = new BaseCache<Mutation>();
 
   public get<T>(entity: EntityById<any, T>): CacheValue<T> | undefined {
     return super.get(entity);
