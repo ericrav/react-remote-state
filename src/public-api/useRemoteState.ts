@@ -36,7 +36,7 @@ export function useRemoteState<P, T>(
     getValue,
     options: mergedOptions,
   });
-  const { loading } = useQuery(entity, mergedOptions);
+  const query = useQuery(entity, mergedOptions);
   const [updateState, mutation] = useMutation(entityMemo, mergedOptions);
 
   /** Subscribe to entity changes in cache */
@@ -61,5 +61,5 @@ export function useRemoteState<P, T>(
     }
   }, [cache, entityMemo, ref]);
 
-  return [state, updateState, { loading, mutation }] as const;
+  return [state, updateState, { query, mutation }] as const;
 }

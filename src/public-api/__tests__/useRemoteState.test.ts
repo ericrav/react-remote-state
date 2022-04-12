@@ -34,15 +34,15 @@ test('update initial value if id key change', () => {
 test('query function', async () => {
   const [useTestRemoteState, hook] = testHook(useRemoteState);
   {
-    const [state,, { loading }] = useTestRemoteState(item(), { query: () => Promise.resolve('data') });
+    const [state,, { query }] = useTestRemoteState(item(), { query: () => Promise.resolve('data') });
     expect(state).toEqual(undefined);
-    expect(loading).toEqual(true);
+    expect(query.loading).toEqual(true);
   }
   await hook.waitForNextUpdate();
   {
-    const [state,, { loading }] = useTestRemoteState(item(), { query: () => Promise.resolve('data') });
+    const [state,, { query }] = useTestRemoteState(item(), { query: () => Promise.resolve('data') });
     expect(state).toEqual('data');
-    expect(loading).toEqual(false);
+    expect(query.loading).toEqual(false);
   }
 
   interface Test {
