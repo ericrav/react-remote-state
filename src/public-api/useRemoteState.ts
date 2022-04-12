@@ -1,5 +1,7 @@
 import {
-  useCallback, useEffect, useMemo, useState,
+  useEffect,
+  useMemo,
+  useState,
 } from 'react';
 import { hashEntity } from '../utils/hashEntity';
 import { useQuery } from '../utils/useQuery';
@@ -7,6 +9,7 @@ import { EntityById } from './Entity';
 import { RemoteStateOptions } from './RemoteStateOptions';
 import { useEntityCache } from './useEntityCache';
 import { useRefAndUpdate } from '../utils/useRefAndUpdate';
+import { useMutation } from '../utils/useMutation';
 
 export function useRemoteState<P, T>(
   entity: EntityById<P, T>,
@@ -20,7 +23,7 @@ export function useRemoteState<P, T>(
     ...options,
   };
 
-  const { mutate, defaultValue } = mergedOptions;
+  const { defaultValue } = mergedOptions;
 
   const cache = useEntityCache();
   const getValue = (): T | undefined => {
@@ -34,6 +37,7 @@ export function useRemoteState<P, T>(
     options: mergedOptions,
   });
   const { loading } = useQuery(entity, mergedOptions);
+  const [updateState, mutation] = useMutation(entityMemo, mergedOptions);
 
   /** Subscribe to entity changes in cache */
   useEffect(() => {
@@ -47,23 +51,6 @@ export function useRemoteState<P, T>(
     return unsubscribe;
   }, [cache, entityMemo, ref]);
 
-  const updateState = useCallback(
-    (setter: T | ((prev: T) => T)) => {
-      const value = typeof setter === 'function'
-        ? (setter as (prev: T) => T)(ref.current.getValue() as T)
-        : setter;
-
-      cache.update(entityMemo, value);
-
-      if (mutate) {
-        Promise.resolve(mutate(value, ...entityMemo.params)).then((result) => {
-          cache.set(entityMemo, result);
-        });
-      }
-    },
-    [cache, entityMemo, mutate, ref],
-  );
-
   useEffect(() => {
     const { getValue, state } = ref.current;
     const value = getValue();
@@ -74,5 +61,5 @@ export function useRemoteState<P, T>(
     }
   }, [cache, entityMemo, ref]);
 
-  return [state, updateState, { loading }] as const;
+  return [state, updateState, { loading, mutation }] as const;
 }
