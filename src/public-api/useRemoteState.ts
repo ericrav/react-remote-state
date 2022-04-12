@@ -53,7 +53,8 @@ export function useRemoteState<P, T>(
         ? (setter as (prev: T) => T)(ref.current.getValue() as T)
         : setter;
 
-      cache.set(entityMemo, value);
+      cache.update(entityMemo, value);
+
       if (mutate) {
         Promise.resolve(mutate(value, ...entityMemo.params)).then((result) => {
           cache.set(entityMemo, result);
@@ -69,8 +70,7 @@ export function useRemoteState<P, T>(
 
     // when args change, re-assign default value
     if (state !== value) {
-      // setState(value);
-      cache.set(entityMemo, value as T);
+      cache.update(entityMemo, value as T);
     }
   }, [cache, entityMemo, ref]);
 

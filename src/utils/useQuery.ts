@@ -28,6 +28,7 @@ export function useQuery<P, T>(
   const entityHash = hashEntity(entity);
   const entityChanges = useMemo(() => [entity.scope, entityHash], [entity.scope, entityHash]);
 
+  /** Subscribe to queries cache to set loading state */
   useEffect(() => {
     setLoading(cache.queries.has(entityRef.current));
     const unsubscribe = cache.queries.subscribe(entityRef.current, () => {
@@ -41,6 +42,7 @@ export function useQuery<P, T>(
     return unsubscribe;
   }, [cache.queries, entityChanges, entityRef]);
 
+  /** Execute entity query & save to cache */
   useEffect(() => {
     const query = queryRef.current;
     if (query && shouldRevalidate(cache, entityRef.current, optionsRef.current)) {
