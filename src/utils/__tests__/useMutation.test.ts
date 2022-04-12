@@ -16,6 +16,8 @@ test('debounce', async () => {
 
   const [setState] = result.current;
 
+  expect(result.current[1].loading).toBe(false);
+
   act(() => {
     setState(1);
   });
@@ -27,14 +29,18 @@ test('debounce', async () => {
   });
 
   expect(mutate).not.toHaveBeenCalled();
+  expect(result.current[1].loading).toBe(false);
 
   jest.advanceTimersByTime(255);
   expect(mutate).not.toHaveBeenCalled();
+  expect(result.current[1].loading).toBe(false);
   act(() => {
     jest.advanceTimersByTime(1);
   });
   expect(mutate).toHaveBeenCalledTimes(1);
   expect(mutate).toHaveBeenCalledWith(3);
+  expect(result.current[1].loading).toBe(true);
   await waitForNextUpdate();
+  expect(result.current[1].loading).toBe(false);
   jest.useRealTimers();
 });

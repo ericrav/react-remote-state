@@ -9,7 +9,7 @@ interface CacheValue<T> {
 
 interface Mutation {
   debounceTimer?: ReturnType<Window['setTimeout']>;
-  mutation?: () => any;
+  inProgress?: boolean;
 }
 
 export class EntityCache extends BaseCache<CacheValue<any>> {

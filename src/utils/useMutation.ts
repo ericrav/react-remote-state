@@ -25,7 +25,7 @@ export function useMutation<P, T>(
   useEffect(() => {
     setLoading(cache.mutations.has(entity));
     const unsubscribe = cache.mutations.subscribe(entity, () => {
-      if (cache.mutations.has(entity)) {
+      if (cache.mutations.get(entity)?.inProgress) {
         setLoading(true);
       } else {
         setLoading(false);
@@ -66,14 +66,18 @@ function handleMutation<P, T>(
 ) {
   const { debounce } = options;
 
-  const mutationCache = cache.mutations.get(entity);
-
   const execute = () => {
+    window.clearTimeout(cache.mutations.get(entity)?.debounceTimer);
+    cache.mutations.set(entity, {
+      inProgress: true,
+    });
     Promise.resolve(mutateFn()).then((result) => {
       cache.set(entity, result);
       cache.mutations.delete(entity);
     });
   };
+
+  const mutationCache = cache.mutations.get(entity);
 
   if (debounce) {
     window.clearTimeout(mutationCache?.debounceTimer);
