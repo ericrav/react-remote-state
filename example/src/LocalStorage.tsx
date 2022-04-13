@@ -23,7 +23,7 @@ const storage = entity({
 
 function TextArea() {
   const [id, setID] = useState('textA');
-  const [state, setState, { loading }] = useRemoteState(storage(id));
+  const [state, setState, { query }] = useRemoteState(storage(id));
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', maxWidth: 400 }}>
@@ -32,7 +32,7 @@ function TextArea() {
         <option value="textB">Text B</option>
         <option value="textC">Text C</option>
       </select>
-      {loading ? (
+      {query.loading ? (
         'Loading...'
       ) : (
         <textarea value={state} onChange={(e) => setState(e.target.value)} />
