@@ -43,9 +43,11 @@ export function useMutation<P, T>(
 
       cache.update(entity, value);
 
+      const lastValidatedValue = cache.get(entity)?.validatedValue;
+
       if (mutate) {
         handleMutation(
-          () => mutate(value, ...entity.params),
+          () => mutate(value, entity.params, lastValidatedValue),
           entity,
           cache,
           ref.current.mutateOptions,

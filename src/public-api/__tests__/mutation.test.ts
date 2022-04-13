@@ -48,7 +48,7 @@ test('itemWithOptions', async () => {
     act(() => {
       setState({ id: 'item1', title: 'Baz', count: 8 });
     });
-    expect(mutateSpy).toHaveBeenCalledWith({ id: 'item1', title: 'Baz', count: 8 }, 'item1');
+    expect(mutateSpy).toHaveBeenCalledWith({ id: 'item1', title: 'Baz', count: 8 }, ['item1'], { count: 7, id: 'item1', title: 'Foobar' });
   }
   {
     const [state] = result.current;
@@ -78,7 +78,7 @@ test('setState captures closure', async () => {
     setState1({ id: 'item1', title: 'Baz', count: 8 });
   });
   await waitForNextUpdate();
-  expect(mutateSpy).toHaveBeenCalledWith({ id: 'item1', title: 'Baz', count: 8 }, 'item1');
+  expect(mutateSpy).toHaveBeenCalledWith({ id: 'item1', title: 'Baz', count: 8 }, ['item1'], undefined);
   expect(mutate2).not.toHaveBeenCalled();
 
   mutateSpy.mockClear();
@@ -86,6 +86,12 @@ test('setState captures closure', async () => {
     setState2({ id: 'item1', title: 'Baz', count: 9 });
   });
   expect(mutateSpy).not.toHaveBeenCalled();
-  expect(mutate2).toHaveBeenCalledWith({ id: 'item1', title: 'Baz', count: 9 }, 'item1');
+  expect(mutate2).toHaveBeenCalledWith(
+    { id: 'item1', title: 'Baz', count: 9 },
+    ['item1'],
+    {
+      count: 8, id: 'item1', serverValue: 1337, title: 'Baz',
+    },
+  );
   await waitForNextUpdate();
 });

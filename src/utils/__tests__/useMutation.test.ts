@@ -38,7 +38,7 @@ test('debounce', async () => {
     jest.advanceTimersByTime(1);
   });
   expect(mutate).toHaveBeenCalledTimes(1);
-  expect(mutate).toHaveBeenCalledWith(3);
+  expect(mutate).toHaveBeenCalledWith(3, [], undefined);
   expect(result.current[1].loading).toBe(true);
   await waitForNextUpdate();
   expect(result.current[1].loading).toBe(false);

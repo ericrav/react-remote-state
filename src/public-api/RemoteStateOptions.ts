@@ -5,9 +5,11 @@ export interface MutateOptions {
   debounce?: false | number;
 }
 
+type MutateFn<T, P> = (newValue: T, variables: Params<P>, lastValidatedValue: T | undefined) => any;
+
 export interface RemoteStateOptions<P, T> {
   query?: (...params: Params<P>) => T | Promise<T> | Promise<EntityValue<T>>;
-  mutate?: (newValue: T, ...params: Params<P>) => any;
+  mutate?: MutateFn<T, P>;
   mutateOptions?: MutateOptions;
   defaultValue?: T;
   queryTTL?: number;
