@@ -19,16 +19,16 @@ Object {
 test('derive entities', () => {
   const User = entity<string, { id: string }>();
   const UserList = entity<void, { id: string }[]>({
-    derive: (list) => list.map((user) => User(user.id)(user)),
+    onQuerySuccess: (list) => list.map((user) => User(user.id)(user)),
   });
 
-  const { derive } = UserList().options;
+  const { onQuerySuccess } = UserList().options;
   const { value } = UserList()([
     { id: '1' },
     { id: '2' },
     { id: '3' },
   ]);
-  expect(derive!(value as { id: string }[])).toEqual([
+  expect(onQuerySuccess!(value as { id: string }[])).toEqual([
     { entity: expect.objectContaining({ params: ['1'] }), value: { id: '1' } },
     { entity: expect.objectContaining({ params: ['2'] }), value: { id: '2' } },
     { entity: expect.objectContaining({ params: ['3'] }), value: { id: '3' } },

@@ -4,7 +4,7 @@ import { useRemoteState } from '../useRemoteState';
 
 const itemList = entity({
   defaultValue: [] as string[],
-  derive: (list) => list.map((name) => item(name)({ name })),
+  onQuerySuccess: (list) => list.map((name) => item(name)({ name })),
 });
 const item = entity();
 

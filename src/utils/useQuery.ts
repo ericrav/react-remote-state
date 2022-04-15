@@ -54,9 +54,9 @@ export function useQuery<P, T>(
         data.current = result;
         cache.queries.delete(entityRef.current);
 
-        const { derive } = optionsRef.current as EntityOptions<P, T>;
-        if (derive) {
-          const derived = derive(result);
+        const { onQuerySuccess } = optionsRef.current as EntityOptions<P, T>;
+        if (onQuerySuccess) {
+          const derived = onQuerySuccess(result);
           if (Array.isArray(derived)) {
             derived.forEach((item) => {
               const value = typeof item.value === 'function' ? item.value(cache.get(item.entity)) : item.value;

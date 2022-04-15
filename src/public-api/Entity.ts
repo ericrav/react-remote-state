@@ -6,7 +6,7 @@ export interface EntityValue<P = any, T = any> {
 }
 
 export interface EntityOptions<P, T> extends RemoteStateOptions<P, T> {
-  derive?: (value: T) => EntityValue | EntityValue[];
+  onQuerySuccess?: (value: T) => EntityValue | EntityValue[];
 }
 
 export type Params<P> = P extends any[] ? P : [P] | [];
