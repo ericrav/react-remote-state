@@ -59,11 +59,11 @@ export function useQuery<P, T>(
           const derived = onQuerySuccess(result);
           if (Array.isArray(derived)) {
             derived.forEach((item) => {
-              const value = typeof item.value === 'function' ? item.value(cache.get(item.entity)) : item.value;
+              const value = typeof item.value === 'function' ? item.value(cache.get(item.entity)?.value) : item.value;
               cache.set(item.entity, value);
             });
           } else {
-            const value = typeof derived.value === 'function' ? derived.value(cache.get(derived.entity)) : derived.value;
+            const value = typeof derived.value === 'function' ? derived.value(cache.get(derived.entity)?.value) : derived.value;
             cache.set(derived.entity, value);
           }
         }

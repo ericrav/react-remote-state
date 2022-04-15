@@ -1,9 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { EntityById } from '../public-api/Entity';
-import {
-  MutateOptions,
-  RemoteStateOptions,
-} from '../public-api/RemoteStateOptions';
+import { RemoteStateOptions } from '../public-api/RemoteStateOptions';
 import { useEntityCache } from '../public-api/useEntityCache';
 import { EntityCache } from './EntityCache';
 import { useRefAndUpdate } from './useRefAndUpdate';
@@ -15,10 +12,10 @@ export function useMutation<P, T>(
   const cache = useEntityCache();
   const [loading, setLoading] = useState(cache.mutations.has(entity));
 
-  const { mutate, mutateOptions } = options;
+  const { mutate } = options;
 
   const ref = useRefAndUpdate({
-    mutateOptions,
+    options,
   });
 
   /** Subscribe to mutations cache to set loading state */
@@ -50,7 +47,7 @@ export function useMutation<P, T>(
           () => mutate(value, entity.params, lastValidatedValue),
           entity,
           cache,
-          ref.current.mutateOptions,
+          ref.current.options,
         );
       }
     },
@@ -64,9 +61,10 @@ function handleMutation<P, T>(
   mutateFn: () => any,
   entity: EntityById<P, T>,
   cache: EntityCache,
-  options: MutateOptions = {},
+  options: RemoteStateOptions<P, T>,
 ) {
-  const { debounce } = options;
+  const { onMutateSuccess } = options;
+  const { debounce } = options.mutateOptions || {};
 
   const execute = () => {
     window.clearTimeout(cache.mutations.get(entity)?.debounceTimer);
@@ -76,6 +74,18 @@ function handleMutation<P, T>(
     Promise.resolve(mutateFn()).then((result) => {
       cache.set(entity, result);
       cache.mutations.delete(entity);
+      if (onMutateSuccess) {
+        const derived = onMutateSuccess(result);
+        if (Array.isArray(derived)) {
+          derived.forEach((item) => {
+            const value = typeof item.value === 'function' ? item.value(cache.get(item.entity)?.value ?? item.entity.options.defaultValue) : item.value;
+            cache.set(item.entity, value);
+          });
+        } else {
+          const value = typeof derived.value === 'function' ? derived.value(cache.get(derived.entity)?.value ?? derived.entity.options.defaultValue) : derived.value;
+          cache.set(derived.entity, value);
+        }
+      }
     });
   };
 
