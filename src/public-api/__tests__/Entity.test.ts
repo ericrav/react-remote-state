@@ -6,13 +6,12 @@ test('entity', async () => {
   });
   expect(note('5')('value')).toMatchInlineSnapshot(`
 Object {
-  "key": "5",
-  "options": Object {
-    "query": [Function],
-  },
+  "entity": [Function],
   "value": "value",
 }
 `);
+  expect(note('5')('value').entity.scope).toEqual(note('5').scope);
+  expect(note('5')('value').entity.params).toEqual(note('5').params);
   const value = await note('3').options?.query?.('3');
   expect(value).toEqual('note value 3');
 });
@@ -23,14 +22,15 @@ test('derive entities', () => {
     derive: (list) => list.map((user) => User(user.id)(user)),
   });
 
-  const { value, options: { derive } } = UserList()([
+  const { derive } = UserList().options;
+  const { value } = UserList()([
     { id: '1' },
     { id: '2' },
     { id: '3' },
   ]);
-  expect(derive!(value)).toEqual([
-    User('1')({ id: '1' }),
-    User('2')({ id: '2' }),
-    User('3')({ id: '3' }),
+  expect(derive!(value as { id: string }[])).toEqual([
+    { entity: expect.objectContaining({ params: ['1'] }), value: { id: '1' } },
+    { entity: expect.objectContaining({ params: ['2'] }), value: { id: '2' } },
+    { entity: expect.objectContaining({ params: ['3'] }), value: { id: '3' } },
   ]);
 });
