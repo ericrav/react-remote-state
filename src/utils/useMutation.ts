@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { EntityById } from '../public-api/Entity';
 import { RemoteStateOptions } from '../public-api/RemoteStateOptions';
 import { useEntityCache } from '../public-api/useEntityCache';
+import { deriveEntities } from './deriveEntities';
 import { EntityCache } from './EntityCache';
 import { useRefAndUpdate } from './useRefAndUpdate';
 
@@ -76,15 +77,7 @@ function handleMutation<P, T>(
       cache.mutations.delete(entity);
       if (onMutateSuccess) {
         const derived = onMutateSuccess(result);
-        if (Array.isArray(derived)) {
-          derived.forEach((item) => {
-            const value = typeof item.value === 'function' ? item.value(cache.get(item.entity)?.value ?? item.entity.options.defaultValue) : item.value;
-            cache.set(item.entity, value);
-          });
-        } else {
-          const value = typeof derived.value === 'function' ? derived.value(cache.get(derived.entity)?.value ?? derived.entity.options.defaultValue) : derived.value;
-          cache.set(derived.entity, value);
-        }
+        deriveEntities(derived, cache);
       }
     });
   };

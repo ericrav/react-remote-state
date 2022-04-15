@@ -4,6 +4,7 @@ import {
 import { EntityById } from '../public-api/Entity';
 import { RemoteStateOptions } from '../public-api/RemoteStateOptions';
 import { useEntityCache } from '../public-api/useEntityCache';
+import { deriveEntities } from './deriveEntities';
 import { hashEntity } from './hashEntity';
 import { shouldRevalidate } from './shouldRevalidate';
 import { useRefAndUpdate } from './useRefAndUpdate';
@@ -57,15 +58,7 @@ export function useQuery<P, T>(
         const { onQuerySuccess } = optionsRef.current;
         if (onQuerySuccess) {
           const derived = onQuerySuccess(result);
-          if (Array.isArray(derived)) {
-            derived.forEach((item) => {
-              const value = typeof item.value === 'function' ? item.value(cache.get(item.entity)?.value) : item.value;
-              cache.set(item.entity, value);
-            });
-          } else {
-            const value = typeof derived.value === 'function' ? derived.value(cache.get(derived.entity)?.value) : derived.value;
-            cache.set(derived.entity, value);
-          }
+          deriveEntities(derived, cache);
         }
 
         setLoading(false);
