@@ -1,7 +1,7 @@
 import {
   useEffect, useMemo, useRef, useState,
 } from 'react';
-import { EntityById, EntityOptions } from '../public-api/Entity';
+import { EntityById } from '../public-api/Entity';
 import { RemoteStateOptions } from '../public-api/RemoteStateOptions';
 import { useEntityCache } from '../public-api/useEntityCache';
 import { hashEntity } from './hashEntity';
@@ -54,7 +54,7 @@ export function useQuery<P, T>(
         data.current = result;
         cache.queries.delete(entityRef.current);
 
-        const { onQuerySuccess } = optionsRef.current as EntityOptions<P, T>;
+        const { onQuerySuccess } = optionsRef.current;
         if (onQuerySuccess) {
           const derived = onQuerySuccess(result);
           if (Array.isArray(derived)) {

@@ -13,4 +13,5 @@ export interface RemoteStateOptions<P, T> {
   mutateOptions?: MutateOptions;
   defaultValue?: T;
   queryTTL?: number;
+  onQuerySuccess?: (value: T) => EntityValue | EntityValue[];
 }

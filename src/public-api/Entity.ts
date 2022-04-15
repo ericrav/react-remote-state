@@ -5,10 +5,6 @@ export interface EntityValue<P = any, T = any> {
   value: T | ((prev: T) => T);
 }
 
-export interface EntityOptions<P, T> extends RemoteStateOptions<P, T> {
-  onQuerySuccess?: (value: T) => EntityValue | EntityValue[];
-}
-
 export type Params<P> = P extends any[] ? P : [P] | [];
 export type Entity<P, T> = (...params: Params<P>) => EntityById<P, T>;
 
@@ -16,11 +12,11 @@ export interface EntityById<P = any, T = any> {
   (value: T | ((prev: T) => T)): EntityValue<P, T>;
   scope: Entity<any, T>;
   params: Params<P>;
-  options: EntityOptions<P, T>
+  options: RemoteStateOptions<P, T>
 }
 
 export function entity<P, T>(
-  options: EntityOptions<P, T> = {},
+  options: RemoteStateOptions<P, T> = {},
 ): Entity<P, T> {
   const entityFactory: Entity<P, T> = (...params) => {
     const entityById: EntityById<P, T> = (value) => ({ entity: entityById, value });
