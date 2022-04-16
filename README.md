@@ -1,5 +1,9 @@
 # React Remote State
 
+<a href="https://www.npmjs.com/package/react-remote-state">
+  <img src="https://img.shields.io/npm/v/react-remote-state">
+</a>
+
 Cache & de-deduplicate queries and mutations across a React application's components with a convenient API mirroring `React.useState`. Immediately update the local cache with `setState` and let React Remote State call your mutation in the background with `debounce` or `throttle` options.
 
  Use the `entity` function to create separate cache scopes, set `onQuerySuccess` and `onMutateSuccess` callbacks, and automatically update
