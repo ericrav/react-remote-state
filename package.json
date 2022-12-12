@@ -1,6 +1,6 @@
 {
   "name": "react-remote-state",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "author": "Eric Rabinowitz",
   "packageManager": "yarn@3.2.0",
   "main": "dist/cjs/index.js",
