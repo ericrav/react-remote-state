@@ -13,11 +13,11 @@ export function LocalStorage() {
 }
 
 const storage = entity({
-  defaultValue: '',
   query: (key: string) => new Promise<string>(resolve => {
     console.log('query', key);
     setTimeout(() => resolve(localStorage.getItem(key) || ''), 1500);
   }),
+  queryTTL: 10000,
   mutate: (value, [key]) => { localStorage.setItem(key, value); return value },
 });
 
@@ -32,11 +32,10 @@ function TextArea() {
         <option value="textB">Text B</option>
         <option value="textC">Text C</option>
       </select>
-      {query.loading ? (
-        'Loading...'
-      ) : (
+      {state !== undefined &&  (
         <textarea value={state} onChange={(e) => setState(e.target.value)} />
       )}
+      {query.loading && <div>Loading...</div>}
     </div>
   );
 }
