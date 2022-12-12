@@ -14,7 +14,7 @@ export function useQuery<P, T>(
   options: RemoteStateOptions<P, T> = {},
 ) {
   const cache = useEntityCache();
-  const [loading, setLoading] = useState(cache.queries.has(entity));
+  const [, rerender] = useState(false);
 
   const data = useRef<T>();
 
@@ -27,17 +27,21 @@ export function useQuery<P, T>(
   const entityHashKey = hashEntity(entity);
 
   const entityHash = hashEntity(entity);
-  const entityChanges = useMemo(() => [entity.scope, entityHash], [entity.scope, entityHash]);
+  const entityChanges = useMemo(
+    () => [entity.scope, entityHash],
+    [entity.scope, entityHash],
+  );
+
+  const loading = cache.queries.has(entity)
+    || (cache.has(entity)
+      ? false
+      : queryRef.current
+        && shouldRevalidate(cache, entityRef.current, optionsRef.current));
 
   /** Subscribe to queries cache to set loading state */
   useEffect(() => {
-    setLoading(cache.queries.has(entityRef.current));
     const unsubscribe = cache.queries.subscribe(entityRef.current, () => {
-      if (cache.queries.has(entityRef.current)) {
-        setLoading(true);
-      } else {
-        setLoading(false);
-      }
+      rerender((v) => !v);
     });
 
     return unsubscribe;
@@ -47,7 +51,6 @@ export function useQuery<P, T>(
   useEffect(() => {
     const query = queryRef.current;
     if (query && shouldRevalidate(cache, entityRef.current, optionsRef.current)) {
-      setLoading(true);
       cache.queries.set(entityRef.current, query);
       (async () => {
         const result = (await query(...entityRef.current.params)) as T;
@@ -61,10 +64,17 @@ export function useQuery<P, T>(
           deriveEntities(derived, cache);
         }
 
-        setLoading(false);
+        rerender((v) => !v);
       })();
     }
-  }, [cache, entityHashKey, entity.scope, queryRef, entityRef, optionsRef]);
+  }, [
+    cache,
+    entityHashKey,
+    entity.scope,
+    queryRef,
+    entityRef,
+    optionsRef,
+  ]);
 
   return { loading, data: data.current };
 }

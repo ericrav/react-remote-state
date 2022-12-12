@@ -1,6 +1,7 @@
 import {
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import { hashEntity } from '../utils/hashEntity';
@@ -15,8 +16,10 @@ export function useRemoteState<P, T>(
   entity: EntityById<P, T>,
   options: RemoteStateOptions<P, T> = {},
 ) {
+  const entityHashKey = hashEntity(entity);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const entityMemo = useMemo(() => entity, [entity.scope, hashEntity(entity)]);
+  const entityMemo = useMemo(() => entity, [entity.scope, entityHashKey]);
+  const previousEntityKey = useRef(entityHashKey);
 
   const mergedOptions = {
     ...entity.options,
@@ -25,14 +28,26 @@ export function useRemoteState<P, T>(
 
   const { defaultValue } = mergedOptions;
 
+  const [, rerender] = useState(false);
   const cache = useEntityCache();
   const getValue = (): T | undefined => {
     const cacheValue = cache.get(entity);
     return cacheValue ? cacheValue.value : defaultValue;
   };
-  const [state, setState] = useState(getValue());
+  const stateRef = useRef(getValue());
+  if (previousEntityKey.current !== entityHashKey) {
+    stateRef.current = getValue();
+  }
+  const state = stateRef.current;
+  const setState = (newState: T) => {
+    if (newState !== state) {
+      stateRef.current = newState;
+      rerender((v) => !v);
+    }
+  };
   const ref = useRefAndUpdate({
     state,
+    setState,
     getValue,
     options: mergedOptions,
   });
@@ -44,7 +59,7 @@ export function useRemoteState<P, T>(
     const unsubscribe = cache.subscribe(entityMemo, () => {
       const cacheValue = cache.get(entityMemo)!;
       if (cacheValue && cacheValue.value !== ref.current.state) {
-        setState(cacheValue.value);
+        ref.current.setState(cacheValue.value);
       }
     });
 
@@ -61,5 +76,6 @@ export function useRemoteState<P, T>(
     }
   }, [cache, entityMemo, ref]);
 
+  previousEntityKey.current = entityHashKey;
   return [state, updateState, { query, mutation }] as const;
 }

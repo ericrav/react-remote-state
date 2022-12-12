@@ -6,6 +6,7 @@ export function testHook<P extends any[], R, T extends (...args: P) => R>(hook: 
   let rerenderHook: (props: P) => void;
   let hookResult: RenderResult<R>;
   const extra = {} as {
+    result: RenderResult<any>,
     waitForNextUpdate: WaitForNextUpdate
   };
 
@@ -19,6 +20,7 @@ export function testHook<P extends any[], R, T extends (...args: P) => R>(hook: 
       rerenderHook = rerender;
       firstCall = false;
       extra.waitForNextUpdate = waitForNextUpdate;
+      extra.result = hookResult;
     } else {
       rerenderHook(args);
     }

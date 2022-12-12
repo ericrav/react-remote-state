@@ -11,7 +11,9 @@ export function useMutation<P, T>(
   options: RemoteStateOptions<P, T> = {},
 ) {
   const cache = useEntityCache();
-  const [loading, setLoading] = useState(cache.mutations.has(entity));
+
+  const loading = cache.mutations.has(entity);
+  const [, setLoading] = useState(loading);
 
   const { mutate } = options;
 
@@ -21,7 +23,6 @@ export function useMutation<P, T>(
 
   /** Subscribe to mutations cache to set loading state */
   useEffect(() => {
-    setLoading(cache.mutations.has(entity));
     const unsubscribe = cache.mutations.subscribe(entity, () => {
       if (cache.mutations.get(entity)?.inProgress) {
         setLoading(true);

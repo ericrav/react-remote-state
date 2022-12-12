@@ -18,7 +18,7 @@ const storage = entity({
     console.log('query', key);
     setTimeout(() => resolve(localStorage.getItem(key) || ''), 1500);
   }),
-  mutate: (value, [key]) => localStorage.setItem(key, value),
+  mutate: (value, [key]) => { localStorage.setItem(key, value); return value },
 });
 
 function TextArea() {
